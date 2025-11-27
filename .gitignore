@@ -1,0 +1,44 @@
+# --- Ogólne (Systemowe i Edytory) ---
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.log
+
+# --- Zmienne środowiskowe (BARDZO WAŻNE - tu trzyma się hasła) ---
+.env
+.env.local
+.env.*.local
+
+# ==========================
+# FRONTEND (React / Vite)
+# ==========================
+# Biblioteki (to waży setki megabajtów, a każdy może to sobie pobrać przez npm install)
+node_modules/
+
+# Wynik budowania aplikacji (folder dist tworzy się po npm run build)
+dist/
+dist-ssr/
+
+# Logi błędów npm
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ==========================
+# BACKEND (Python)
+# ==========================
+# Skompilowane pliki Pythona (śmieci generowane przy uruchamianiu)
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Wirtualne środowiska (to jest specyficzne dla Twojego komputera)
+venv/
+.venv/
+env/
+ENV/
+
+# Baza danych SQLite (jeśli będziesz używać lokalnie)
+*.sqlite3
+*.db
