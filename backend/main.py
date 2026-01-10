@@ -47,12 +47,14 @@ def get_db_connection_string():
     client = SecretClient(vault_url=KV_URI, credential=credential)
     secret = client.get_secret(SECRET_NAME)
     
-
     raw_conn_str = secret.value
     
     if "Driver=" not in raw_conn_str:
         raw_conn_str = f"Driver={{ODBC Driver 18 for SQL Server}};{raw_conn_str}"
     
+    if "TrustServerCertificate=" not in raw_conn_str:
+        raw_conn_str += ";TrustServerCertificate=yes"
+        
     params = urllib.parse.quote_plus(raw_conn_str)
     return f"mssql+pyodbc:///?odbc_connect={params}"
 
