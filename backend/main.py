@@ -1,7 +1,10 @@
 from fastapi import FastAPI
 from azure.identity import DefaultAzureCredential
 from azure.keyvault.secrets import SecretClient
+from azure.monitor.opentelemetry import configure_azure_monitor
 import os
+
+configure_azure_monitor()
 
 app = FastAPI()
 
