@@ -4,3 +4,5 @@ gunicorn
 azure-identity
 azure-keyvault-secrets
 azure-monitor-opentelemetry
+sqlalchemy
+pyodbc
