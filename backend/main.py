@@ -1,22 +1,27 @@
 import urllib.parse
+import logging
+import sys
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import List, Optional
-from azure.monitor.opentelemetry import configure_azure_monitor
 
+logging.basicConfig(stream=sys.stdout, level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+from azure.monitor.opentelemetry import configure_azure_monitor
 try:
     configure_azure_monitor()
 except Exception:
-    pass # Ignorujemy błędy lokalnie
+    pass
 
 from azure.identity import DefaultAzureCredential
 from azure.keyvault.secrets import SecretClient
-from sqlalchemy import create_engine, Column, Integer, String, Boolean
+from sqlalchemy import create_engine, Column, Integer, String, Boolean, text
 from sqlalchemy.orm import sessionmaker, declarative_base
 
 app = FastAPI()
 
-KEY_VAULT_NAME = "team1-key-vault-prz"
+KEY_VAULT_NAME = "team1-key-vault-prz" 
 KV_URI = f"https://{KEY_VAULT_NAME}.vault.azure.net"
 SECRET_NAME = "AZURE-SQL-CONNECTION-STRING"
 
@@ -36,17 +41,15 @@ class TodoResponse(BaseModel):
     title: str
     completed: bool
     class Config:
-        from_attributes = True 
+        from_attributes = True
 
 db_session = None
+last_error = "Nieznany błąd startowy"
 
-def get_db_connection_string():
-    """Pobiera hasło z Key Vault i tworzy Connection String do SQL"""
-    print("Pobieranie sekretu z Key Vault...")
+def get_connection_string():
     credential = DefaultAzureCredential()
     client = SecretClient(vault_url=KV_URI, credential=credential)
     secret = client.get_secret(SECRET_NAME)
-    
     raw_conn_str = secret.value
     
     if "Driver=" not in raw_conn_str:
@@ -58,42 +61,49 @@ def get_db_connection_string():
     params = urllib.parse.quote_plus(raw_conn_str)
     return f"mssql+pyodbc:///?odbc_connect={params}"
 
-def init_db():
-    """Inicjalizuje połączenie i tworzy tabelę jeśli nie istnieje"""
-    global db_session
+def try_connect():
+    global db_session, last_error
     try:
-        conn_str = get_db_connection_string()
+        conn_str = get_connection_string()
         engine = create_engine(conn_str)
+        with engine.connect() as connection:
+            connection.execute(text("SELECT 1"))
         
         Base.metadata.create_all(bind=engine)
-        
         SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
         db_session = SessionLocal()
-        print("Connected to DB and created a table!")
+        logger.info("✅ SUKCES: Połączono z bazą!")
+        return True
     except Exception as e:
-        print(f" DB error: {e}")
+        last_error = str(e)
+        logger.error(f"❌ BŁĄD BAZY: {e}")
+        return False
 
-init_db()
+try_connect()
 
 
 @app.get("/")
 def read_root():
-    return {"message": "API działa! Baza danych podpięta."}
-
-@app.get("/todos", response_model=List[TodoResponse])
-def get_todos():
-    if not db_session:
-        raise HTTPException(status_code=500, detail="Brak połączenia z bazą")
-    todos = db_session.query(TodoItem).all()
-    return todos
+    return {"status": "App running", "db_connected": db_session is not None}
 
 @app.post("/todos", response_model=TodoResponse)
 def create_todo(todo: TodoCreate):
     if not db_session:
-        raise HTTPException(status_code=500, detail="Brak połączenia z bazą")
+        if not try_connect():
+            raise HTTPException(status_code=500, detail=f"BŁĄD BAZY DANYCH: {last_error}")
     
-    db_item = TodoItem(title=todo.title)
-    db_session.add(db_item)
-    db_session.commit()
-    db_session.refresh(db_item)
-    return db_item
+    try:
+        db_item = TodoItem(title=todo.title)
+        db_session.add(db_item)
+        db_session.commit()
+        db_session.refresh(db_item)
+        return db_item
+    except Exception as e:
+         raise HTTPException(status_code=500, detail=f"BŁĄD ZAPISU: {str(e)}")
+
+@app.get("/todos", response_model=List[TodoResponse])
+def get_todos():
+    if not db_session:
+         if not try_connect():
+            raise HTTPException(status_code=500, detail=f"BŁĄD BAZY DANYCH: {last_error}")
+    return db_session.query(TodoItem).all()
