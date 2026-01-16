@@ -8,7 +8,7 @@ interface TodoItem {
 }
 
 
-const API_URL = "https://team1-backend-gucbckbgchbfa8bp.polandcentral-01.azurewebsites.net/";
+const API_URL = "https://team1-backend-gucbckbgchbfa8bp.polandcentral-01.azurewebsites.net";
 
 function App() {
   const [todos, setTodos] = useState<TodoItem[]>([]);
