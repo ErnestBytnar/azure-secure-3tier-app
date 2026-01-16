@@ -2,6 +2,7 @@ import urllib.parse
 import logging
 import sys
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Optional
 
@@ -20,6 +21,14 @@ from sqlalchemy import create_engine, Column, Integer, String, Boolean, text
 from sqlalchemy.orm import sessionmaker, declarative_base
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["https://team1-frontend-g7e3d9duaka0d6fs.polandcentral-01.azurewebsites.net/"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 KEY_VAULT_NAME = "team1-key-vault-prz" 
 KV_URI = f"https://{KEY_VAULT_NAME}.vault.azure.net"
