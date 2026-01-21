@@ -5,10 +5,37 @@
         "vulnerabilityAssessments_Default_storageContainerPath": {
             "value": null
         },
-        "servers_sql_db_projekt_name": {
+        "sites_team1_backend_name": {
             "value": null
         },
-        "virtualNetworks_vnet_projekt_main_name": {
+        "sites_team1_frontend_name": {
+            "value": null
+        },
+        "servers_team1_sql_server_name": {
+            "value": null
+        },
+        "virtualNetworks_vnet_team1_name": {
+            "value": null
+        },
+        "vaults_team1_key_vault_prz_name": {
+            "value": null
+        },
+        "serverfarms_ASP_Projektchmura_a0a8_name": {
+            "value": null
+        },
+        "components_team1_backend_insight_name": {
+            "value": null
+        },
+        "networkSecurityGroups_nsg_public_protection_name": {
+            "value": null
+        },
+        "networkSecurityGroups_nsg_private_protection_name": {
+            "value": null
+        },
+        "actionGroups_Application_Insights_Smart_Detection_name": {
+            "value": null
+        },
+        "workspaces_DefaultWorkspace_9175ce4f_a0ee_4c58_865d_4dd940258c0f_PLC_externalid": {
             "value": null
         }
     }
